@@ -55,12 +55,12 @@ def login():
     if not data:
         return jsonify({"msg": "No JSON data provided"}), 400
 
-    username = data.get('username', '').strip()
+    email = data.get('email', '').strip()
     password = data.get('password', '')
  
-    if not username or not password:
-        return jsonify({"msg": "Username and password required"}), 400
-    user = User.query.filter_by(username=username).first()
+    if not email or not password:
+        return jsonify({"msg": "Email and password required"}), 400
+    user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
         return jsonify({"msg": "Invalid credentials"}), 401
     token = create_access_token(identity=str(user.user_id)) 
