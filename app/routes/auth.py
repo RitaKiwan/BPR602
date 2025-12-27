@@ -32,22 +32,34 @@ def home():
 @auth.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    if not data or not data.get('username') or not data.get('first_name') or not data.get('last_name'):
-        return jsonify({"msg": "Missing fields"}), 400
+ 
+    if not data or not data.get('username') or not data.get('email') or not data.get('password'):
+        return jsonify({"msg": "Missing required fields"}), 400
     if User.query.filter_by(username=data['username']).first():
         return jsonify({"msg": "Username taken"}), 409
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({"msg": "Email already exists"}), 409
     user = User(
         username=data['username'], 
         email=data['email'],
-        first_name=data['first_name'],
-        last_name=data['last_name']
+        first_name=data.get('first_name'),
+        last_name=data.get('last_name')
     )
     user.set_password(data['password'])
     db.session.add(user)
     db.session.commit()
-    return jsonify({"msg": "User created"}), 201
-
-
+    access_token = create_access_token(identity=str(user.user_id))
+    response_data = {
+        "user_id": user.user_id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "username": user.username,
+        "access_token": access_token,
+        "msg": "User created successfully"
+    }
+    return jsonify(response_data), 201
+    
 @auth.route('/login', methods=['POST'])
 def login():
   
